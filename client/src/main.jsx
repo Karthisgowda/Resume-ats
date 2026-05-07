@@ -79,6 +79,7 @@ function App() {
   const [resume, setResume] = useState(null);
   const [targetRole, setTargetRole] = useState("");
   const [submittedRole, setSubmittedRole] = useState("");
+  const [showRoleSuggestions, setShowRoleSuggestions] = useState(false);
   const [jobDescription, setJobDescription] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState("");
@@ -91,6 +92,16 @@ function App() {
       { name: "Remaining", value: 100 - score }
     ];
   }, [analysis]);
+
+  const filteredRoles = useMemo(() => {
+    const query = targetRole.trim().toLowerCase();
+
+    if (!query) {
+      return roleOptions.slice(0, 10);
+    }
+
+    return roleOptions.filter((role) => role.toLowerCase().includes(query)).slice(0, 10);
+  }, [targetRole]);
 
   async function handleAnalyze(event) {
     event.preventDefault();
@@ -238,21 +249,40 @@ function App() {
             />
           </label>
 
-          <label>
+          <label className="role-search">
             Which job are you applying for?
             <input
               value={targetRole}
-              onChange={(event) => setTargetRole(event.target.value)}
-              placeholder="Frontend Developer, Data Analyst, AI Intern..."
+              onBlur={() => window.setTimeout(() => setShowRoleSuggestions(false), 140)}
+              onChange={(event) => {
+                setTargetRole(event.target.value);
+                setShowRoleSuggestions(true);
+              }}
+              onFocus={() => setShowRoleSuggestions(true)}
+              placeholder="Search job role, e.g. frontend, data, HR..."
             />
+            {showRoleSuggestions ? (
+              <div className="role-suggestions">
+                {filteredRoles.length ? (
+                  filteredRoles.map((role) => (
+                    <button
+                      key={role}
+                      type="button"
+                      onMouseDown={(event) => {
+                        event.preventDefault();
+                        setTargetRole(role);
+                        setShowRoleSuggestions(false);
+                      }}
+                    >
+                      {role}
+                    </button>
+                  ))
+                ) : (
+                  <span>No matching role. You can type your own.</span>
+                )}
+              </div>
+            ) : null}
           </label>
-          <div className="role-options" aria-label="Common job options">
-            {roleOptions.map((role) => (
-              <button key={role} type="button" className={targetRole === role ? "selected" : ""} onClick={() => setTargetRole(role)}>
-                {role}
-              </button>
-            ))}
-          </div>
 
           <label>
             Job description or keywords

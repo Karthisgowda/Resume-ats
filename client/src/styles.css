@@ -106,29 +106,52 @@ h1 {
   gap: 18px;
 }
 
-.role-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.role-options button {
-  min-height: 36px;
-  padding: 0 12px;
-  color: #36515b;
-  background: #edf4f5;
-  border: 1px solid rgba(31, 122, 140, 0.14);
-  font-size: 0.88rem;
-}
-
-.role-options button.selected {
-  color: white;
-  background: #1f7a8c;
-}
-
 label {
   display: grid;
   gap: 8px;
+  font-weight: 700;
+}
+
+.role-search {
+  position: relative;
+}
+
+.role-suggestions {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 260px;
+  overflow-y: auto;
+  border: 1px solid rgba(23, 32, 38, 0.12);
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 20px 40px rgba(23, 32, 38, 0.14);
+  padding: 6px;
+}
+
+.role-suggestions button {
+  width: 100%;
+  min-height: 40px;
+  justify-content: flex-start;
+  color: #243941;
+  background: transparent;
+  border-radius: 6px;
+  padding: 0 12px;
+  font-weight: 700;
+}
+
+.role-suggestions button:hover,
+.role-suggestions button:focus {
+  color: #1f7a8c;
+  background: #edf6f7;
+}
+
+.role-suggestions span {
+  display: block;
+  color: #62727b;
+  padding: 12px;
   font-weight: 700;
 }
 
