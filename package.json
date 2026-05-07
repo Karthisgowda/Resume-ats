@@ -1,0 +1,39 @@
+{
+  "name": "ai-resume-analyzer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "AI Resume Analyzer with ATS scoring, resume parsing, and career improvement insights.",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "client": "vite --host 0.0.0.0",
+    "server": "node server/index.js",
+    "build": "vite build",
+    "start": "NODE_ENV=production node server/index.js"
+  },
+  "keywords": [
+    "resume",
+    "ats",
+    "groq",
+    "career",
+    "ai"
+  ],
+  "author": "Karthisgowda",
+  "license": "MIT",
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "lucide-react": "^0.555.0",
+    "mammoth": "^1.11.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5",
+    "vite": "^7.2.4",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.4.1"
+  },
+  "devDependencies": {}
+}
