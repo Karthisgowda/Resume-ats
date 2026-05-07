@@ -19,7 +19,48 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import "./styles.css";
 
 const sectionColors = ["#1f7a8c", "#7c3aed", "#e76f51", "#2a9d8f", "#f4a261", "#457b9d"];
-const roleOptions = ["Frontend Developer", "Data Analyst", "Software Engineer", "AI/ML Intern", "Full Stack Developer"];
+const roleOptions = [
+  "Frontend Developer",
+  "Backend Developer",
+  "Full Stack Developer",
+  "Software Engineer",
+  "Web Developer",
+  "React Developer",
+  "Angular Developer",
+  "Node.js Developer",
+  "Java Developer",
+  "Python Developer",
+  "PHP Developer",
+  "Mobile App Developer",
+  "Android Developer",
+  "iOS Developer",
+  "UI/UX Designer",
+  "Product Designer",
+  "Graphic Designer",
+  "Data Analyst",
+  "Business Analyst",
+  "Data Scientist",
+  "Machine Learning Engineer",
+  "AI/ML Intern",
+  "Data Engineer",
+  "Cloud Engineer",
+  "DevOps Engineer",
+  "Cybersecurity Analyst",
+  "Network Engineer",
+  "Database Administrator",
+  "QA Tester",
+  "Automation Tester",
+  "Project Manager",
+  "Product Manager",
+  "Digital Marketing Executive",
+  "SEO Analyst",
+  "Content Writer",
+  "Technical Writer",
+  "HR Executive",
+  "Sales Executive",
+  "Finance Analyst",
+  "Customer Support Executive"
+];
 
 function clampScore(score) {
   return Math.max(0, Math.min(100, Number(score) || 0));
