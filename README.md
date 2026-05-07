@@ -1,6 +1,6 @@
 # AI Resume Analyzer
 
-AI Resume Analyzer is a web-based resume review platform that helps students, freshers, and professionals evaluate resumes against modern ATS and recruitment expectations. Users can upload a PDF, DOCX, or TXT resume, optionally add a target job role, and receive AI-generated scoring, skill insights, strengths, gaps, and practical improvement suggestions.
+AI Resume Analyzer is a web-based resume review platform that helps students, freshers, and professionals evaluate resumes against modern ATS and recruitment expectations. Users can upload a PDF, DOCX, or TXT resume, optionally add a target job role, and receive AI-generated scoring, skill insights, strengths, gaps, and practical improvement suggestions
 
 ## Features
 
