@@ -3,7 +3,7 @@ import cors from "cors";
 import express from "express";
 import multer from "multer";
 import mammoth from "mammoth";
-import { PDFParse } from "pdf-parse";
+import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildPrompt, extractJson, fallbackAnalysis } from "./analyzer.js";
@@ -30,9 +30,7 @@ async function parseResume(file) {
   const name = file.originalname.toLowerCase();
 
   if (mime === "application/pdf" || name.endsWith(".pdf")) {
-    const parser = new PDFParse({ data: file.buffer });
-    const parsed = await parser.getText();
-    await parser.destroy();
+    const parsed = await pdfParse(file.buffer);
     return parsed.text;
   }
 
