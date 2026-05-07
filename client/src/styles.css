@@ -106,6 +106,26 @@ h1 {
   gap: 18px;
 }
 
+.role-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.role-options button {
+  min-height: 36px;
+  padding: 0 12px;
+  color: #36515b;
+  background: #edf4f5;
+  border: 1px solid rgba(31, 122, 140, 0.14);
+  font-size: 0.88rem;
+}
+
+.role-options button.selected {
+  color: white;
+  background: #1f7a8c;
+}
+
 label {
   display: grid;
   gap: 8px;
@@ -195,6 +215,30 @@ button:disabled {
   padding: 56px clamp(20px, 5vw, 72px);
   display: grid;
   gap: 24px;
+}
+
+.results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.results-header span {
+  display: block;
+  color: #62727b;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.results-header h2 {
+  font-size: 1.55rem;
+}
+
+.download-button {
+  width: auto;
+  padding: 0 18px;
+  white-space: nowrap;
 }
 
 .score-card {
@@ -342,6 +386,15 @@ ul {
 
   .score-card {
     padding: 18px;
+  }
+
+  .results-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .download-button {
+    width: 100%;
   }
 
   .score-label {

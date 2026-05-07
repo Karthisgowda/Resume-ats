@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   BarChart3,
   Brain,
+  Download,
   FileText,
   Loader2,
   Sparkles,
@@ -14,14 +15,25 @@ import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer,
 import "./styles.css";
 
 const sectionColors = ["#1f7a8c", "#7c3aed", "#e76f51", "#2a9d8f", "#f4a261", "#457b9d"];
+const roleOptions = ["Frontend Developer", "Data Analyst", "Software Engineer", "AI/ML Intern", "Full Stack Developer"];
 
 function clampScore(score) {
   return Math.max(0, Math.min(100, Number(score) || 0));
 }
 
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function App() {
   const [resume, setResume] = useState(null);
   const [targetRole, setTargetRole] = useState("");
+  const [submittedRole, setSubmittedRole] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [analysis, setAnalysis] = useState(null);
   const [error, setError] = useState("");
@@ -45,9 +57,14 @@ function App() {
       return;
     }
 
+    if (!targetRole.trim()) {
+      setError("Tell us which job you are applying for so the suggestions can match that role.");
+      return;
+    }
+
     const body = new FormData();
     body.append("resume", resume);
-    body.append("targetRole", targetRole);
+    body.append("targetRole", targetRole.trim());
     body.append("jobDescription", jobDescription);
 
     setLoading(true);
@@ -63,11 +80,73 @@ function App() {
       }
 
       setAnalysis(data);
+      setSubmittedRole(targetRole.trim());
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
+  }
+
+  function downloadReport() {
+    if (!analysis) {
+      return;
+    }
+
+    const today = new Date().toLocaleDateString();
+    const sections = (analysis.sections || [])
+      .map(
+        (section) =>
+          `<li><strong>${escapeHtml(section.name)} (${clampScore(section.score)}/100):</strong> ${escapeHtml(section.comment)}</li>`
+      )
+      .join("");
+    const skills = (analysis.skills || [])
+      .map((skill) => `<li>${escapeHtml(skill.name)}: ${clampScore(skill.level)}/100</li>`)
+      .join("");
+    const strengths = (analysis.strengths || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    const improvements = (analysis.improvements || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    const missingKeywords = (analysis.missingKeywords || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    const checklist = (analysis.atsChecklist || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+
+    const report = `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>AI Resume Analyzer Report</title>
+    <style>
+      body { font-family: Arial, sans-serif; color: #172026; line-height: 1.6; margin: 40px; }
+      h1, h2 { color: #1f7a8c; }
+      .score { font-size: 44px; font-weight: 800; margin: 10px 0; }
+      section { border-top: 1px solid #dbe3e7; padding-top: 18px; margin-top: 22px; }
+      li { margin-bottom: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>AI Resume Analyzer Report</h1>
+    <p><strong>Date:</strong> ${today}</p>
+    <p><strong>Resume:</strong> ${escapeHtml(analysis.resumeStats?.fileName || "Uploaded resume")}</p>
+    <p><strong>Applying for:</strong> ${escapeHtml(submittedRole || targetRole)}</p>
+    <p><strong>Suggested headline:</strong> ${escapeHtml(analysis.recommendedHeadline || "Not available")}</p>
+    <div class="score">${clampScore(analysis.score)}/100</div>
+    <p>${escapeHtml(analysis.summary || "")}</p>
+    <section><h2>Strengths</h2><ul>${strengths}</ul></section>
+    <section><h2>Suggestions to Improve</h2><ul>${improvements}</ul></section>
+    <section><h2>Missing Keywords</h2><ul>${missingKeywords}</ul></section>
+    <section><h2>Skill Signals</h2><ul>${skills}</ul></section>
+    <section><h2>Section Scores</h2><ul>${sections}</ul></section>
+    <section><h2>ATS Checklist</h2><ul>${checklist}</ul></section>
+  </body>
+</html>`;
+
+    const blob = new Blob([report], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `resume-report-${(submittedRole || "job").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.html`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -111,13 +190,20 @@ function App() {
           </label>
 
           <label>
-            Target role
+            Which job are you applying for?
             <input
               value={targetRole}
               onChange={(event) => setTargetRole(event.target.value)}
               placeholder="Frontend Developer, Data Analyst, AI Intern..."
             />
           </label>
+          <div className="role-options" aria-label="Common job options">
+            {roleOptions.map((role) => (
+              <button key={role} type="button" className={targetRole === role ? "selected" : ""} onClick={() => setTargetRole(role)}>
+                {role}
+              </button>
+            ))}
+          </div>
 
           <label>
             Job description or keywords
@@ -139,6 +225,17 @@ function App() {
 
       {analysis ? (
         <section className="results">
+          <div className="results-header">
+            <div>
+              <span>Resume report for</span>
+              <h2>{submittedRole}</h2>
+            </div>
+            <button type="button" className="download-button" onClick={downloadReport}>
+              <Download size={18} />
+              Download Report
+            </button>
+          </div>
+
           <div className="score-card">
             <ResponsiveContainer width="100%" height={210}>
               <PieChart>
