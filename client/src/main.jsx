@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { jsPDF } from "jspdf";
 import {
   ArrowUpRight,
   BadgeCheck,
@@ -7,7 +8,10 @@ import {
   Brain,
   Download,
   FileText,
+  ListChecks,
   Loader2,
+  MessageSquareText,
+  Route,
   Sparkles,
   UploadCloud
 } from "lucide-react";
@@ -94,59 +98,63 @@ function App() {
     }
 
     const today = new Date().toLocaleDateString();
-    const sections = (analysis.sections || [])
-      .map(
-        (section) =>
-          `<li><strong>${escapeHtml(section.name)} (${clampScore(section.score)}/100):</strong> ${escapeHtml(section.comment)}</li>`
-      )
-      .join("");
-    const skills = (analysis.skills || [])
-      .map((skill) => `<li>${escapeHtml(skill.name)}: ${clampScore(skill.level)}/100</li>`)
-      .join("");
-    const strengths = (analysis.strengths || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
-    const improvements = (analysis.improvements || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
-    const missingKeywords = (analysis.missingKeywords || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
-    const checklist = (analysis.atsChecklist || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    const doc = new jsPDF({ unit: "pt", format: "a4" });
+    const margin = 44;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    let y = 48;
 
-    const report = `<!doctype html>
-<html>
-  <head>
-    <meta charset="utf-8" />
-    <title>AI Resume Analyzer Report</title>
-    <style>
-      body { font-family: Arial, sans-serif; color: #172026; line-height: 1.6; margin: 40px; }
-      h1, h2 { color: #1f7a8c; }
-      .score { font-size: 44px; font-weight: 800; margin: 10px 0; }
-      section { border-top: 1px solid #dbe3e7; padding-top: 18px; margin-top: 22px; }
-      li { margin-bottom: 6px; }
-    </style>
-  </head>
-  <body>
-    <h1>AI Resume Analyzer Report</h1>
-    <p><strong>Date:</strong> ${today}</p>
-    <p><strong>Resume:</strong> ${escapeHtml(analysis.resumeStats?.fileName || "Uploaded resume")}</p>
-    <p><strong>Applying for:</strong> ${escapeHtml(submittedRole || targetRole)}</p>
-    <p><strong>Suggested headline:</strong> ${escapeHtml(analysis.recommendedHeadline || "Not available")}</p>
-    <div class="score">${clampScore(analysis.score)}/100</div>
-    <p>${escapeHtml(analysis.summary || "")}</p>
-    <section><h2>Strengths</h2><ul>${strengths}</ul></section>
-    <section><h2>Suggestions to Improve</h2><ul>${improvements}</ul></section>
-    <section><h2>Missing Keywords</h2><ul>${missingKeywords}</ul></section>
-    <section><h2>Skill Signals</h2><ul>${skills}</ul></section>
-    <section><h2>Section Scores</h2><ul>${sections}</ul></section>
-    <section><h2>ATS Checklist</h2><ul>${checklist}</ul></section>
-  </body>
-</html>`;
+    function addText(text, size = 10, isBold = false) {
+      doc.setFont("helvetica", isBold ? "bold" : "normal");
+      doc.setFontSize(size);
+      const lines = doc.splitTextToSize(String(text ?? ""), pageWidth - margin * 2);
+      lines.forEach((line) => {
+        if (y > pageHeight - 44) {
+          doc.addPage();
+          y = 48;
+        }
+        doc.text(line, margin, y);
+        y += size + 5;
+      });
+    }
 
-    const blob = new Blob([report], { type: "text/html" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `resume-report-${(submittedRole || "job").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.html`;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    URL.revokeObjectURL(url);
+    function addSection(title, items = []) {
+      y += 8;
+      addText(title, 13, true);
+      items.forEach((item) => addText(`- ${item}`, 10));
+    }
+
+    doc.setTextColor(31, 122, 140);
+    addText("AI Resume Analyzer Report", 20, true);
+    doc.setTextColor(23, 32, 38);
+    addText(`Date: ${today}`);
+    addText(`Resume: ${analysis.resumeStats?.fileName || "Uploaded resume"}`);
+    addText(`Applying for: ${submittedRole || targetRole}`);
+    addText(`ATS Score: ${clampScore(analysis.score)}/100`, 16, true);
+    addText(`Job Match: ${clampScore(analysis.jobMatch?.score)}/100`, 14, true);
+    addText(`Suggested headline: ${analysis.recommendedHeadline || "Not available"}`);
+    addText(analysis.summary || "");
+
+    addSection("Strengths", analysis.strengths || []);
+    addSection("Suggestions to Improve", analysis.improvements || []);
+    addSection("Missing Keywords", analysis.missingKeywords || []);
+    addSection("Matched Keywords", analysis.jobMatch?.matchedKeywords || []);
+    addSection(
+      "Section Scores",
+      (analysis.sections || []).map((section) => `${section.name} (${clampScore(section.score)}/100): ${section.comment}`)
+    );
+    addSection(
+      "Rewritten Bullets",
+      (analysis.rewrittenBullets || []).map((bullet) => `${bullet.before} -> ${bullet.after}`)
+    );
+    addSection(
+      "Skill Roadmap",
+      (analysis.skillRoadmap || []).map((item) => `${item.priority}: ${item.skill} - ${item.action}`)
+    );
+    addSection("Interview Questions", analysis.interviewQuestions || []);
+    addSection("ATS Checklist", analysis.atsChecklist || []);
+
+    doc.save(`resume-report-${(submittedRole || "job").toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`);
   }
 
   return (
@@ -259,6 +267,25 @@ function App() {
             <InsightCard icon={<BarChart3 />} title="ATS Checklist" items={analysis.atsChecklist} />
           </div>
 
+          <div className="feature-grid">
+            <article className="job-match-panel">
+              <div className="card-title">
+                <ListChecks />
+                <h2>Job Match</h2>
+              </div>
+              <strong>{clampScore(analysis.jobMatch?.score)}%</strong>
+              <p>{analysis.jobMatch?.comment}</p>
+              <div className="keyword-groups">
+                <KeywordGroup title="Matched" items={analysis.jobMatch?.matchedKeywords} />
+                <KeywordGroup title="Need to Add" items={analysis.jobMatch?.missingCriticalKeywords} />
+              </div>
+            </article>
+
+            <InsightCard icon={<Route />} title="Skill Roadmap" items={(analysis.skillRoadmap || []).map((item) => `${item.priority}: ${item.skill} - ${item.action}`)} />
+            <InsightCard icon={<Sparkles />} title="Rewritten Bullets" items={(analysis.rewrittenBullets || []).map((item) => item.after)} />
+            <InsightCard icon={<MessageSquareText />} title="Interview Prep" items={analysis.interviewQuestions} />
+          </div>
+
           <div className="analytics">
             <div>
               <h2>Section Scores</h2>
@@ -312,6 +339,19 @@ function InsightCard({ icon, title, items = [] }) {
         ))}
       </ul>
     </article>
+  );
+}
+
+function KeywordGroup({ title, items = [] }) {
+  return (
+    <div>
+      <span>{title}</span>
+      <div className="keyword-list">
+        {items.slice(0, 6).map((item) => (
+          <mark key={item}>{item}</mark>
+        ))}
+      </div>
+    </div>
   );
 }
 

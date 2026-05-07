@@ -281,10 +281,65 @@ button:disabled {
   gap: 18px;
 }
 
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1.2fr repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
 .insight-card,
+.job-match-panel,
 .analytics > div {
   border-radius: 8px;
   padding: 22px;
+}
+
+.job-match-panel {
+  border: 1px solid rgba(23, 32, 38, 0.1);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 20px 50px rgba(23, 32, 38, 0.08);
+}
+
+.job-match-panel > strong {
+  display: block;
+  margin: 18px 0 8px;
+  color: #1f7a8c;
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.job-match-panel p {
+  color: #4e5f68;
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+
+.keyword-groups {
+  display: grid;
+  gap: 14px;
+}
+
+.keyword-groups span {
+  display: block;
+  color: #43525a;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.keyword-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.keyword-list mark {
+  color: #24505a;
+  background: #e7f3f4;
+  border: 1px solid rgba(31, 122, 140, 0.12);
+  border-radius: 999px;
+  padding: 6px 9px;
+  font-size: 0.82rem;
+  font-weight: 800;
 }
 
 .card-title {
@@ -369,6 +424,10 @@ ul {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .score-label {
     top: 75px;
   }
@@ -380,7 +439,8 @@ ul {
   }
 
   .metric-row,
-  .result-grid {
+  .result-grid,
+  .feature-grid {
     grid-template-columns: 1fr;
   }
 

@@ -30,13 +30,21 @@ Return only valid JSON with this shape:
   "missingKeywords": string[],
   "sections": [{"name": string, "score": number, "comment": string}],
   "atsChecklist": string[],
-  "recommendedHeadline": string
+  "recommendedHeadline": string,
+  "jobMatch": {"score": number, "matchedKeywords": string[], "missingCriticalKeywords": string[], "comment": string},
+  "rewrittenBullets": [{"before": string, "after": string}],
+  "skillRoadmap": [{"skill": string, "priority": "High" | "Medium" | "Low", "action": string}],
+  "interviewQuestions": string[]
 }
 
 Scoring rules:
 - score must be 0-100.
 - section scores must be 0-100.
 - skill levels must be 0-100.
+- jobMatch score must be 0-100 and must reflect fit for the target role/job description.
+- rewrittenBullets should improve weak resume bullets or create stronger examples if exact bullets are unclear.
+- skillRoadmap should prioritize the most useful skills to add next for the target role.
+- interviewQuestions should focus on likely questions from resume gaps and role requirements.
 - Make feedback specific, practical, and recruitment-focused.
 
 Job description:
@@ -64,6 +72,7 @@ export function extractJson(content) {
 export function fallbackAnalysis(resumeText, targetRole = "") {
   const lower = resumeText.toLowerCase();
   const words = resumeText.split(/\s+/).filter(Boolean);
+  const role = targetRole || "the target role";
   const detectedSkills = fallbackSkills
     .filter((skill) => lower.includes(skill))
     .map((skill) => ({
@@ -112,6 +121,38 @@ export function fallbackAnalysis(resumeText, targetRole = "") {
       "Include role-specific keywords.",
       "Quantify achievements where possible."
     ],
-    recommendedHeadline: targetRole ? `${targetRole} | ATS-Ready Candidate` : "Technology Professional | ATS-Ready Candidate"
+    recommendedHeadline: targetRole ? `${targetRole} | ATS-Ready Candidate` : "Technology Professional | ATS-Ready Candidate",
+    jobMatch: {
+      score: Math.min(88, score - 4),
+      matchedKeywords: detectedSkills.slice(0, 6).map((skill) => skill.name),
+      missingCriticalKeywords: ["role-specific frameworks", "testing", "deployment", "measurable outcomes"],
+      comment: `The resume has a workable match for ${role}, but it needs stronger role keywords and clearer evidence of impact.`
+    },
+    rewrittenBullets: [
+      {
+        before: "Worked on web development projects.",
+        after: `Built and improved web application features for ${role}, using relevant tools while documenting measurable project outcomes.`
+      },
+      {
+        before: "Good communication and leadership skills.",
+        after: "Led team coordination, communicated project progress clearly, and supported delivery through organized planning and ownership."
+      },
+      {
+        before: "Knowledge of technical skills.",
+        after: "Applied technical skills across practical projects, connecting tools, APIs, and data workflows to solve user-focused problems."
+      }
+    ],
+    skillRoadmap: [
+      { skill: "Role-specific keywords", priority: "High", action: "Add tools and responsibilities that appear in the job description." },
+      { skill: "Testing and debugging", priority: "Medium", action: "Mention testing tools, bug fixes, and quality improvements in project bullets." },
+      { skill: "Deployment and version control", priority: "Medium", action: "Add GitHub, hosting, CI/CD, or deployment links wherever possible." },
+      { skill: "Quantified achievements", priority: "High", action: "Rewrite bullets with numbers, timelines, user counts, or performance gains." }
+    ],
+    interviewQuestions: [
+      `Which project best proves you are ready for ${role}?`,
+      "How did you measure the impact of your strongest project?",
+      "Which missing skill from the job description are you currently improving?",
+      "How would you explain your resume gap or weakest section to a recruiter?"
+    ]
   };
 }
